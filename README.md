@@ -5,5 +5,5 @@ Features:
 * Save connect configuration to json file (`config.json`)
 * Encrypt / Decrypt `config.json` file
 
-Next features (comming soon) :
-* Read Hibernate Configuration File (`hibernate.cfg.xml`)
+Next feature (comming soon) :
+* Read Hibernate Configuration Properties using Hibernate API
