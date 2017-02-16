@@ -86,7 +86,12 @@ public class SQL {
         }
         Statement stmt = con.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
-        closeConnection();
+        if(stmt != null) {
+            stmt.close();
+        }
+        if(con != null) {
+            con.close();
+        }
         return rs;
     }
 
@@ -103,7 +108,12 @@ public class SQL {
         }
         Statement stmt = con.createStatement();
         stmt.executeUpdate(sql);
-        closeConnection();
+        if(stmt != null) {
+            stmt.close();
+        }
+        if(con != null) {
+            con.close();
+        }
     }
 
     /**
