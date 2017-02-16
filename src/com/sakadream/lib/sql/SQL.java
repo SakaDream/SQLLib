@@ -85,14 +85,7 @@ public class SQL {
             createConnection(SQLConfigJson.getHibernateCfg());
         }
         Statement stmt = con.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
-        if(stmt != null) {
-            stmt.close();
-        }
-        if(con != null) {
-            con.close();
-        }
-        return rs;
+        return stmt.executeQuery(sql);
     }
 
     /**
