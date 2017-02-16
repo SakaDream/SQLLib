@@ -5,6 +5,7 @@
  */
 package com.sakadream.lib.sql;
 
+import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -78,9 +79,15 @@ public class SQL {
      * @throws Exception
      */
     public static ResultSet selectQuery(String sql) throws Exception {
-        createConnection();
+        try {
+            createConnection();
+        } catch(FileNotFoundException fnfe) {
+            createConnection(SQLConfigJson.getHibernateCfg());
+        }
         Statement stmt = con.createStatement();
-        return stmt.executeQuery(sql);
+        ResultSet rs = stmt.executeQuery(sql);
+        closeConnection();
+        return rs;
     }
 
     /**
@@ -89,9 +96,14 @@ public class SQL {
      * @throws Exception
      */
     public static void updateQuery(String sql) throws Exception {
-        createConnection();
+        try {
+            createConnection();
+        } catch(FileNotFoundException fnfe) {
+            createConnection(SQLConfigJson.getHibernateCfg());
+        }
         Statement stmt = con.createStatement();
         stmt.executeUpdate(sql);
+        closeConnection();
     }
 
     /**
