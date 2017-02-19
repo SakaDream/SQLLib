@@ -7,7 +7,7 @@ package com.sakadream.lib.sql;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.sakadream.lib.sql.security.Encryption;
+import com.sakadream.lib.security.Security;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -49,8 +49,8 @@ public class SQLConfigJson {
         FileWriter writer = new FileWriter(file);
         String json = gson.toJson(sqlConfig, type);
         if (encrypt) {
-            Encryption encryption = new Encryption();
-            writer.write(encryption.encrypt(json));
+            Security security = new Security();
+            writer.write(security.encrypt(json));
         } else {
             writer.write(json);
         }
@@ -84,7 +84,7 @@ public class SQLConfigJson {
                 json += line;
                 line = br.readLine();
             }
-            String decryptedJson = Encryption.decrypt(json);
+            String decryptedJson = Security.decrypt(json);
             return gson.fromJson(decryptedJson, type);
         }
     }
