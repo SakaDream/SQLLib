@@ -105,7 +105,8 @@ public class SQLConfigJson {
     }
 
     /**
-     * Get Hibernate Configuration Properties using Hibernate API (Default location of hibernate.cfg.xml is the root of java package - src/java)
+     * Get Hibernate Configuration Properties using Hibernate API 
+     * (Default location of hibernate.cfg.xml is the root of java package - src/java)
      * @return SQLConfig
      */
     public static SQLConfig getHibernateCfg() {
@@ -120,9 +121,7 @@ public class SQLConfigJson {
     public static void setHibernateCfg(SQLConfig config, String pkgLocation) {
         String url = "";
         if (config.getUrl() == null) {
-            url = "jdbc:sqlserver://" + config.getHost()
-                    + ":" + config.getPort()
-                    + ";databaseName=" + config.getDbName();
+            url = config.generateURL();
         } else {
             url = config.getUrl();
         }
@@ -135,7 +134,8 @@ public class SQLConfigJson {
     }
 
     /**
-     * Set hibernate.cfg.xml properties from SQLConfig object (Default location of hibernate.cfg.xml is the root of java package - src/java)
+     * Set hibernate.cfg.xml properties from SQLConfig object 
+     * (Default location of hibernate.cfg.xml is the root of java package - src/java)
      * @param config SQLConfig object
      */
     public static void setHibernateCfg(SQLConfig config) {
@@ -154,7 +154,8 @@ public class SQLConfigJson {
     }
     
     /**
-     * Save from hibernate.cfg.xml to config.json (Default location of hibernate.cfg.xml is the root of java package - src/java)
+     * Save from hibernate.cfg.xml to config.json 
+     * (Default location of hibernate.cfg.xml is the root of java package - src/java)
      * @param isEncrypt Are you want to encrypt config.json?
      * @throws Exception
      */
@@ -174,7 +175,8 @@ public class SQLConfigJson {
     }
     
     /**
-     * Save from config.json to hibernate.cfg.xml (Default location of hibernate.cfg.xml is the root of java package - src/java)
+     * Save from config.json to hibernate.cfg.xml 
+     * (Default location of hibernate.cfg.xml is the root of java package - src/java)
      * @throws Exception
      */
     public static void jsonToXml() throws Exception {
