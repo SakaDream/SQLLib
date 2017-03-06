@@ -18,5 +18,5 @@ Simple SQL Server Functions for Java (connect, select query, update query, echo 
 ### v1.1.1 (02/15/2017 12:34 GMT)
 * Bug fixed
 
-### v1.2.0 (02/19/2017 05:51 GMT)
+### v1.2.0 (02/16/2017 05:51 GMT)
 * Upgrade Security Library
