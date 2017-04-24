@@ -20,3 +20,9 @@ Simple SQL Server Functions for Java (connect, select query, update query, echo 
 
 ### v1.2.0 (02/16/2017 05:51 GMT)
 * Upgrade Security Library
+
+### v1.3.0 (03/06/2017 05:13 GMT)
+* Add SQLite Support
+
+### v1.4.0 (04/24/2017 09:40 GMT)
+* Add MySQL Support
