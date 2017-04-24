@@ -19,7 +19,12 @@ public enum ClassName {
     /**
      * Class Name for SQLite
      */
-    SQLite("org.sqlite.JDBC");
+    SQLite("org.sqlite.JDBC"),
+    
+    /**
+     * Class Name for MySQL
+     */
+    MySQL("com.mysql.jdbc.Driver");
     
     private String url;
 

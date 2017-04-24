@@ -19,5 +19,10 @@ public enum DbType {
     /**
      * SQLite Database
      */
-    SQLite
+    SQLite,
+    
+    /**
+     * MySQL Database
+     */
+    MySQL;
 }

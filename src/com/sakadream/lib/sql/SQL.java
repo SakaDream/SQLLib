@@ -24,8 +24,8 @@ public class SQL {
 
     private static Connection con;
     private static String message = "This database type is not supported, "
-                        + "this library supports SQL Server and SQLite. "
-                        + "Other databases comming soon";
+            + "this library supports SQL Server and SQLite. "
+            + "Other databases comming soon";
 
     /**
      * Set Connection using SQLConfig object
@@ -42,11 +42,14 @@ public class SQL {
                 case SQLite:
                     try {
                         con = DriverManager.getConnection(config.getUrl());
-                    } catch(SQLException sqle) {
+                    } catch (SQLException sqle) {
                         File file = new File(config.getDbName());
                         file.createNewFile();
                         con = DriverManager.getConnection(config.getUrl());
                     }
+                    break;
+                case MySQL:
+                    con = DriverManager.getConnection(config.getUrl(), config.getUsername(), config.getPassword());
                     break;
                 default:
                     throw new AssertionError(message);
@@ -92,37 +95,44 @@ public class SQL {
      *
      * @param sql SQL Query
      * @return java.sql.ResultSet
-     * @throws Exception
      */
-    public static ResultSet selectQuery(String sql) throws Exception {
+    public static ResultSet selectQuery(String sql) {
         try {
-            createConnection();
-        } catch (FileNotFoundException fnfe) {
-            createConnection(SQLConfigJson.getHibernateCfg());
+            try {
+                createConnection();
+            } catch (FileNotFoundException fnfe) {
+                createConnection(SQLConfigJson.getHibernateCfg());
+            }
+            Statement stmt = con.createStatement();
+            return stmt.executeQuery(sql);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException();
         }
-        Statement stmt = con.createStatement();
-        return stmt.executeQuery(sql);
     }
 
     /**
      * Execute SQL CREATE / DROP / ALTER / INSERT / UPDATE Query
      *
      * @param sql SQL Query
-     * @throws Exception
      */
-    public static void updateQuery(String sql) throws Exception {
+    public static void updateQuery(String sql) {
         try {
-            createConnection();
-        } catch (FileNotFoundException fnfe) {
-            createConnection(SQLConfigJson.getHibernateCfg());
-        }
-        Statement stmt = con.createStatement();
-        stmt.executeUpdate(sql);
-        if (stmt != null) {
-            stmt.close();
-        }
-        if (con != null) {
-            con.close();
+            try {
+                createConnection();
+            } catch (FileNotFoundException fnfe) {
+                createConnection(SQLConfigJson.getHibernateCfg());
+            }
+            Statement stmt = con.createStatement();
+            stmt.executeUpdate(sql);
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (con != null) {
+                con.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

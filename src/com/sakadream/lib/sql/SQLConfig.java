@@ -13,7 +13,7 @@ package com.sakadream.lib.sql;
 public final class SQLConfig {
 
     private static String message = "This database type is not supported, "
-            + "this library supports SQL Server and SQLite. "
+            + "this library supports SQL Server, SQLite and MySQL. "
             + "Other databases comming soon";
 
     private DbType dbType;
@@ -24,6 +24,11 @@ public final class SQLConfig {
     private String username;
     private String password;
     private String url;
+    
+    /**
+     * SQLConfig with no argument (for getter / setter)
+     */
+    public SQLConfig() {}
 
     /**
      * Default values for SQL Server Database: host = localhost, port = 1433,
@@ -46,6 +51,12 @@ public final class SQLConfig {
             case SQLite:
                 this.dbName = dbName;
                 break;
+            case MySQL:
+                this.host = "localhost";
+                this.port = "3306";
+                this.username = "root";
+                this.dbName = dbName;
+                this.password = password;
             default:
                 throw new AssertionError(message);
         }
@@ -55,16 +66,17 @@ public final class SQLConfig {
     }
 
     /**
-     * SQLConfig object for SQL Server Database
+     * SQLConfig object for SQL Server / MySQL Database
      *
-     * @param host SQL Server host name
-     * @param port SQL Server port
+     * @param type Database type
+     * @param host SQL Server / MySQL host name
+     * @param port SQL Server / MySQL port
      * @param dbName Database name
-     * @param username SQL Server username
-     * @param password SQL Server password
+     * @param username SQL Server / MySQL username
+     * @param password SQL Server / MySQL password
      */
-    public SQLConfig(String host, String port, String dbName, String username, String password) {
-        this.dbType = dbType.SQLServer;
+    public SQLConfig(DbType type, String host, String port, String dbName, String username, String password) {
+        this.dbType = type;
         setClassNameByDBType();
         this.host = host;
         this.port = port;
@@ -99,6 +111,8 @@ public final class SQLConfig {
                 return "jdbc:sqlserver://" + this.host + ":" + this.port + ";databaseName=" + this.dbName;
             case SQLite:
                 return "jdbc:sqlite:" + this.dbName;
+            case MySQL:
+                return "jdbc:mysql://" + this.host + ":" + this.port + "/" + this.dbName;
             default:
                 throw new AssertionError(message);
         }
@@ -188,6 +202,8 @@ public final class SQLConfig {
             case SQLite:
                 this.dbType = DbType.SQLite;
                 break;
+            case MySQL:
+                this.dbType = DbType.MySQL;
             default:
                 throw new AssertionError(message);
         }
@@ -202,8 +218,10 @@ public final class SQLConfig {
             this.className = ClassName.SQLServer;
         } else if (className.equals(ClassName.SQLite.getUrl())) {
             this.className = ClassName.SQLite;
+        } else if (className.equals(ClassName.MySQL.getUrl())) {
+            this.className = ClassName.MySQL;
         } else {
-            this.className = null;
+            throw new AssertionError(message);
         }
     }
 
@@ -217,6 +235,9 @@ public final class SQLConfig {
                 break;
             case SQLite:
                 this.className = ClassName.SQLite;
+                break;
+            case MySQL:
+                this.className = ClassName.MySQL;
                 break;
             default:
                 throw new AssertionError(message);
@@ -232,6 +253,10 @@ public final class SQLConfig {
             this.className = ClassName.SQLServer;
         } else if (url.indexOf("jdbc:sqlite") == 0) {
             this.className = ClassName.SQLite;
+        } else if (url.indexOf("jdbc:mysql") == 0) {
+            this.className = ClassName.MySQL;
+        } else {
+            throw new AssertionError(message);
         }
     }
 
