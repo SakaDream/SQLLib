@@ -30,5 +30,8 @@ Simple SQL Functions for Java (connect, select query, update query, echo query)
 ### v1.5.0 (05/18/2017 15:00 GMT)
 * Now support Maven project
 
+### v1.6.0 (06/25/2017 10:22 GMT)
+* Fix bugs
+
 ## Licence
 [MIT](LICENCE)
