@@ -33,6 +33,8 @@ Simple SQL Functions for Java (connect, select query, update query, echo query)
 ### v1.6.0 (06/25/2017 10:22 GMT)
 * Fix bugs
 * Read json file using file name
+* Read SQLConfig using File and InputStream object
+* Note: json structure has been changed
 
 ## Licence
 [MIT](LICENCE)
