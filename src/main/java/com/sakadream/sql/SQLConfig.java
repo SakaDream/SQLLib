@@ -6,7 +6,6 @@ package com.sakadream.sql;
 
 /**
  * SQLConfig object
- *
  * @author Phan Ba Hai
  */
 public final class SQLConfig {
@@ -14,69 +13,70 @@ public final class SQLConfig {
     private static String message = "This database type is not supported, "
             + "this library supports SQL Server, SQLite and MySQL. "
             + "Other databases comming soon";
+    private Dialect dialect = new Dialect();
+    private Boolean hibernateConfig = false;
+    private String host = "";
+    private String port = "";
+    private String dbName = "";
+    private String username = "";
+    private String password = "";
+    private String url = "";
 
-    private DbType dbType;
-    private ClassName className;
-    private String host;
-    private String port;
-    private String dbName;
-    private String username;
-    private String password;
-    private String url;
-    
     /**
      * SQLConfig with no argument (for getter / setter)
      */
-    public SQLConfig() {}
+    public SQLConfig() {
+    }
 
     /**
-     * Default values for SQL Server Database: host = localhost, port = 1433,
-     * username = sa Note: SQLite JDBC not support password
-     *
+     * Default values for SQL Server Database: host = localhost, port = 1433
+     * Default values for MySQL Database: host = localhost, port = 3306 Note:
+     * SQLite JDBC not support password
      * @param dbType Database type
      * @param dbName Database name
-     * @param password Database password
+     * @param username Server username
+     * @param password Server password
      */
-    public SQLConfig(DbType dbType, String dbName, String password) {
-        this.setDBType(dbType);
+    public SQLConfig(String dbType, String dbName, String username, String password) {
+        DialectsList dl = new DialectsList();
+        this.dialect = new Dialect(dbType, dl.getDialectByDBType(dbType).getClassName());
         switch (dbType) {
-            case SQLServer:
+            case "SQL Server":
                 this.host = "localhost";
                 this.port = "1433";
-                this.username = "sa";
+                this.username = username;
                 this.dbName = dbName;
                 this.password = password;
                 break;
-            case SQLite:
+            case "SQLite":
                 this.dbName = dbName;
+                optimizeDbName();
                 break;
-            case MySQL:
+            case "MySQL":
                 this.host = "localhost";
                 this.port = "3306";
-                this.username = "root";
+                this.username = username;
                 this.dbName = dbName;
                 this.password = password;
             default:
                 throw new AssertionError(message);
         }
-        setClassNameByDBType();
-        optimizeDbName();
         this.url = generateURL();
     }
 
     /**
      * SQLConfig object for SQL Server / MySQL Database
-     *
-     * @param type Database type
-     * @param host SQL Server / MySQL host name
-     * @param port SQL Server / MySQL port
+     * @param dbType Database type
+     * @param host Server host name
+     * @param port Server port
      * @param dbName Database name
-     * @param username SQL Server / MySQL username
-     * @param password SQL Server / MySQL password
+     * @param username Server username
+     * @param password Server password
      */
-    public SQLConfig(DbType type, String host, String port, String dbName, String username, String password) {
-        this.dbType = type;
-        setClassNameByDBType();
+    public SQLConfig(String dbType, String host, String port, String dbName,
+            String username, String password) {
+        DialectsList dl = new DialectsList();
+        this.dialect = dl.getDialectByDBType(dbType);
         this.host = host;
         this.port = port;
         this.dbName = dbName;
@@ -87,54 +87,105 @@ public final class SQLConfig {
 
     /**
      * SQLConfig object for Hibernate Configuration XML file
-     *
-     * @param dbName Database name
-     * @param password SQL Server password
+     * @param username Server username
+     * @param password Server password
      * @param url The Connection String (hibernate.hibernate.connection.url
-     * property in hibernate.cfg.xml)
+     * property in hibernate.cfg.xml) or JDBC URL
      */
-    public SQLConfig(String dbName, String password, String url) {
-        setClassNameByURL(url);
-        this.dbName = dbName;
+    public SQLConfig(String username, String password, String url) {
+        DialectsList dl = new DialectsList();
+        this.dialect = dl.getDialectByUrl(url);
+        this.username = username;
         this.password = password;
         this.url = url;
     }
 
     /**
-     *
-     * @return String
+     * SQLConfig object for URL Connection only
+     * @param url The Connection String
      */
-    public String generateURL() {
-        switch (this.dbType) {
-            case SQLServer:
-                return "jdbc:sqlserver://" + this.host + ":" + this.port + ";databaseName=" + this.dbName;
-            case SQLite:
-                return "jdbc:sqlite:" + this.dbName;
-            case MySQL:
-                return "jdbc:mysql://" + this.host + ":" + this.port + "/" + this.dbName;
+    public SQLConfig(String url) {
+        DialectsList dl = new DialectsList();
+        this.dialect = dl.getDialectByUrl(url);
+        this.url = url;
+    }
+
+    /**
+     * Generate URL using database configuration
+     * @param host Database host
+     * @param port Database port
+     * @param dbName Database / SQLite file name
+     * @param username Database username
+     * @param password Database password
+     * @return String JDBC URL
+     */
+    public String generateURL(String host, String port, String dbName,
+            String username, String password) {
+        switch (dialect.getDialect()) {
+            case "SQL Server":
+                return "jdbc:sqlserver://" + host + ":" + port
+                        + ";databaseName=" + dbName
+                        + ";user=" + username
+                        + ";password=" + password + ";";
+            case "SQLite":
+                return "jdbc:sqlite:" + dbName;
+            case "MySQL":
+                return "jdbc:mysql://" + host + ":" + port
+                        + "/" + dbName + "?user=" + username
+                        + "&password=" + password;
             default:
-                throw new AssertionError(message);
+                return "";
         }
     }
 
     /**
-     *
-     * @return DbType
+     * Generate URL using SQLConfig object
+     * @return String URL String
      */
-    public DbType getDBType() {
-        return dbType;
+    public String generateURL() {
+        switch (dialect.getDialect()) {
+            case "SQL Server":
+                return "jdbc:sqlserver://" + this.host + ":" + this.port
+                        + ";databaseName=" + this.dbName
+                        + ";user=" + this.username
+                        + ";password=" + this.password + ";";
+            case "SQLite":
+                return "jdbc:sqlite:" + this.dbName;
+            case "MySQL":
+                return "jdbc:mysql://" + this.host + ":" + this.port
+                        + "/" + this.dbName + "?user=" + this.username
+                        + "&password=" + this.password;
+            default:
+                return "";
+        }
     }
 
     /**
-     *
-     * @return ClassName
+     * Get DB Type
+     * @return String
      */
-    public ClassName getClassName() {
-        return className;
+    public String getDbType() {
+        return this.dialect.getDialect();
     }
 
     /**
-     *
+     * Get JDBC Classname
+     * @return String
+     */
+    public String getClassName() {
+        return this.dialect.getClassName();
+    }
+
+    /**
+     * Check hibernateConfig value is true
+     * @return Boolean
+     */
+    public Boolean isHibernateConfig() {
+        return this.hibernateConfig;
+    }
+
+    /**
+     * Get Server Host
      * @return String
      */
     public String getHost() {
@@ -142,7 +193,7 @@ public final class SQLConfig {
     }
 
     /**
-     *
+     * Get Server Port
      * @return String
      */
     public String getPort() {
@@ -150,7 +201,7 @@ public final class SQLConfig {
     }
 
     /**
-     *
+     * Get Database name
      * @return String
      */
     public String getDbName() {
@@ -158,7 +209,7 @@ public final class SQLConfig {
     }
 
     /**
-     *
+     * Get username
      * @return String
      */
     public String getUsername() {
@@ -166,7 +217,7 @@ public final class SQLConfig {
     }
 
     /**
-     *
+     * Get password
      * @return String
      */
     public String getPassword() {
@@ -174,7 +225,7 @@ public final class SQLConfig {
     }
 
     /**
-     *
+     * Get JDBC URL
      * @return String
      */
     public String getUrl() {
@@ -182,101 +233,39 @@ public final class SQLConfig {
     }
 
     /**
-     *
-     * @param dbType The Database Type
+     * Set Dialect
+     * @param dialect
      */
-    public void setDBType(DbType dbType) {
-        this.dbType = dbType;
+    public void setDialect(Dialect dialect) {
+        this.dialect = dialect;
     }
 
     /**
-     *
-     * @param className The Class Name
+     * Set Hibernate Config
+     * @param hibernateConfig
      */
-    public void setDBTypeByClassName(ClassName className) {
-        switch (className) {
-            case SQLServer:
-                this.dbType = DbType.SQLServer;
-                break;
-            case SQLite:
-                this.dbType = DbType.SQLite;
-                break;
-            case MySQL:
-                this.dbType = DbType.MySQL;
-            default:
-                throw new AssertionError(message);
-        }
+    public void setHibernateConfig(Boolean hibernateConfig) {
+        this.hibernateConfig = hibernateConfig;
     }
 
     /**
-     *
-     * @param className The Class Name
-     */
-    public void setClassName(String className) {
-        if (className.equals(ClassName.SQLServer.getUrl())) {
-            this.className = ClassName.SQLServer;
-        } else if (className.equals(ClassName.SQLite.getUrl())) {
-            this.className = ClassName.SQLite;
-        } else if (className.equals(ClassName.MySQL.getUrl())) {
-            this.className = ClassName.MySQL;
-        } else {
-            throw new AssertionError(message);
-        }
-    }
-
-    /**
-     *
-     */
-    public void setClassNameByDBType() {
-        switch (dbType) {
-            case SQLServer:
-                this.className = ClassName.SQLServer;
-                break;
-            case SQLite:
-                this.className = ClassName.SQLite;
-                break;
-            case MySQL:
-                this.className = ClassName.MySQL;
-                break;
-            default:
-                throw new AssertionError(message);
-        }
-    }
-
-    /**
-     *
-     * @param url The URL String
-     */
-    public void setClassNameByURL(String url) {
-        if (url.indexOf("jdbc:sqlserver") == 0) {
-            this.className = ClassName.SQLServer;
-        } else if (url.indexOf("jdbc:sqlite") == 0) {
-            this.className = ClassName.SQLite;
-        } else if (url.indexOf("jdbc:mysql") == 0) {
-            this.className = ClassName.MySQL;
-        } else {
-            throw new AssertionError(message);
-        }
-    }
-
-    /**
-     *
-     * @param host SQL Server host name
+     * Set Server Host
+     * @param host Database Host name
      */
     public void setHost(String host) {
         this.host = host;
     }
 
     /**
-     *
-     * @param port SQL Server port
+     * Set Server Port
+     * @param port Server port
      */
     public void setPort(String port) {
         this.port = port;
     }
 
     /**
-     *
+     * Set Database name
      * @param dbName Database name
      */
     public void setDbName(String dbName) {
@@ -285,44 +274,44 @@ public final class SQLConfig {
     }
 
     /**
-     * Optimize The Database Name
+     * Optimize SQLite Database Name
      */
     public void optimizeDbName() {
-        if (this.dbType == DbType.SQLite) {
-            if (!this.dbName.contains(".db") | 
-                    !this.dbName.substring(this.dbName.lastIndexOf(".") + 1).equalsIgnoreCase("db")) {
+        if ("SQLite".equals(this.dialect.getDialect())) {
+            if (!this.dbName.contains(".db")
+                    | !this.dbName.substring(this.dbName.lastIndexOf(".") + 1).equalsIgnoreCase("db")) {
                 this.dbName = this.dbName + ".db";
             }
         }
     }
 
     /**
-     *
-     * @param username SQL Server username
+     * Set Server username
+     * @param username Server username
      */
     public void setUsername(String username) {
         this.username = username;
     }
 
     /**
-     *
-     * @param password SQL Server password
+     * Set Server password
+     * @param password Server password
      */
     public void setPassword(String password) {
         this.password = password;
     }
 
     /**
-     *
+     * Set JDBC URL
      * @param url The Connection String (hibernate.hibernate.connection.url
-     * property in hibernate.cfg.xml)
+     * property in hibernate.cfg.xml) or JDBC URL
      */
     public void setUrl(String url) {
         this.url = url;
     }
 
     /**
-     *
+     * Set Generated JDBC URL using SQLConfig object
      */
     public void setGeneratedUrl() {
         this.url = generateURL();

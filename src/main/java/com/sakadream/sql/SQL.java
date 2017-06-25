@@ -4,10 +4,9 @@
  */
 package com.sakadream.sql;
 
-import static com.sakadream.sql.DbType.SQLServer;
-import static com.sakadream.sql.DbType.SQLite;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -16,29 +15,31 @@ import java.sql.Statement;
 
 /**
  * SQL Utilities (connect db, select query, update query, echo query)
- *
  * @author Phan Ba Hai
  */
 public class SQL {
-
-    private static Connection con;
-    private static String message = "This database type is not supported, "
+    private static Connection con = null;
+    private static final String message = "This database type is not supported, "
             + "this library supports SQL Server and SQLite. "
             + "Other databases comming soon";
 
     /**
      * Set Connection using SQLConfig object
-     *
      * @param config SQLConfig object
      */
     public static void createConnection(SQLConfig config) {
         try {
-            Class.forName(config.getClassName().getUrl());
-            switch (config.getDBType()) {
-                case SQLServer:
+            Class.forName(config.getClassName());
+            if (config.isHibernateConfig() | !config.getUsername().equals("") | !config.getPassword().equals("")) {
+                if (config.getDbType().equalsIgnoreCase("SQL Server") | config.getDbType().equalsIgnoreCase("MySQL")) {
                     con = DriverManager.getConnection(config.getUrl(), config.getUsername(), config.getPassword());
-                    break;
-                case SQLite:
+                } else {
+                    throw new AssertionError(message);
+                }
+            } else {
+                if (config.getDbType().equalsIgnoreCase("SQL Server") | config.getDbType().equalsIgnoreCase("MySQL")) {
+                    con = DriverManager.getConnection(config.getUrl());
+                } else if (config.getDbType().equalsIgnoreCase("SQLite")) {
                     try {
                         con = DriverManager.getConnection(config.getUrl());
                     } catch (SQLException sqle) {
@@ -46,26 +47,22 @@ public class SQL {
                         file.createNewFile();
                         con = DriverManager.getConnection(config.getUrl());
                     }
-                    break;
-                case MySQL:
-                    con = DriverManager.getConnection(config.getUrl(), config.getUsername(), config.getPassword());
-                    break;
-                default:
+                } else {
                     throw new AssertionError(message);
+                }
             }
         } catch (ClassNotFoundException cnfe) {
             System.out.println("JDBC Driver can not be found!");
         } catch (SQLException sqle) {
             System.err.println("Can not connect to the database!");
-            System.out.println(sqle.getMessage());
-        } catch (Exception ex) {
+            sqle.printStackTrace();
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
 
     /**
      * Set connection using config.json
-     *
      * @throws Exception
      */
     public static void createConnection() throws Exception {
@@ -74,15 +71,15 @@ public class SQL {
     }
 
     /**
-     *
-     * @return java.sql.Connection
+     * Get Connection object
+     * @return Connection
      */
     public static Connection getConnection() {
         return con;
     }
 
     /**
-     *
+     * Close Connection
      * @throws SQLException
      */
     public static void closeConnection() throws SQLException {
@@ -91,9 +88,8 @@ public class SQL {
 
     /**
      * Execute SQL SELECT Query
-     *
      * @param sql SQL Query
-     * @return java.sql.ResultSet
+     * @return ResultSet
      */
     public static ResultSet selectQuery(String sql) {
         try {
@@ -112,7 +108,6 @@ public class SQL {
 
     /**
      * Execute SQL CREATE / DROP / ALTER / INSERT / UPDATE Query
-     *
      * @param sql SQL Query
      */
     public static void updateQuery(String sql) {
@@ -137,7 +132,6 @@ public class SQL {
 
     /**
      * Print SQL query into command line
-     *
      * @param sql SQL Query
      */
     public static void echoQuery(String sql) {

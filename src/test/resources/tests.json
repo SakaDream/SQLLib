@@ -1,0 +1,13 @@
+{
+    "dialect": {
+        "dialect": "SQL Server",
+        "className": "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+    },
+    "hibernateConfig": false,
+    "host": "",
+    "port": "",
+    "dbName": "",
+    "username": "qPEm6e",
+    "password": "6mVRz_4PACh9:uUY",
+    "url": "jdbc:sqlserver://sakadream-test.database.windows.net:1433;databaseName=SQLLib-Test"
+}
