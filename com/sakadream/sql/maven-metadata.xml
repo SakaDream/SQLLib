@@ -4,8 +4,8 @@
   <artifactId>sql</artifactId>
   <versioning>
     <versions>
-      <version>1.5.0-SNAPSHOT</version>
+      <version>1.6.0-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20170518155702</lastUpdated>
+    <lastUpdated>20170625102210</lastUpdated>
   </versioning>
 </metadata>
